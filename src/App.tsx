@@ -12,6 +12,8 @@ import { RosterPanel } from './components/RosterPanel';
 import { BracketView } from './components/BracketView';
 import { Standings } from './components/Standings';
 import { ConfirmDialog } from './components/ConfirmDialog';
+import { TournamentSwitcher } from './components/TournamentSwitcher';
+import type { OwnedSummary } from './state/persistence';
 
 type Dialog = 'reset' | 'discard' | 'new' | null;
 
@@ -23,10 +25,11 @@ const SYNC_TEXT: Record<string, string> = {
 export default function App() {
   const {
     id, tournament, role, sync, previewAsViewer,
-    init, refresh, togglePreview, reseed, start, backToDraft, discard, pickWinner, revertMatch, shareUrl,
+    init, refresh, togglePreview, reseed, start, backToDraft, newTournament, removeTournament, pickWinner, revertMatch, shareUrl,
   } = useStore();
   const [dialog, setDialog] = useState<Dialog>(null);
   const [revertTarget, setRevertTarget] = useState<{ matchId: string; impact: number } | null>(null);
+  const [removeTarget, setRemoveTarget] = useState<OwnedSummary | null>(null);
   const [copied, setCopied] = useState(false);
   const started = useRef(false);
 
@@ -49,7 +52,7 @@ export default function App() {
   if (sync === 'notfound') return (
     <Centered>
       找不到這場賽事 🤷<br />
-      <button className="btn" style={{ marginTop: 14 }} onClick={() => discard()}>回起始畫面</button>
+      <button className="btn" style={{ marginTop: 14 }} onClick={() => newTournament()}>回起始畫面</button>
     </Centered>
   );
   if (!tournament) return <StartScreen />;
@@ -95,6 +98,7 @@ export default function App() {
       )}
 
       <div className="control-bar">
+        {isAdmin && <TournamentSwitcher onRequestRemove={setRemoveTarget} />}
         <span className={`badge ${statusClass}`}>● {statusLabel}</span>
         <span className="count">{tournament.players.length} 人 · 雙敗淘汰{tournament.resetEnabled ? ' · 含復活賽' : ''}</span>
         {tournament.status === 'RUNNING' && isAdmin && <span className="count">· 目前 {remaining} 場可進行</span>}
@@ -159,20 +163,29 @@ export default function App() {
       )}
       {dialog === 'discard' && (
         <ConfirmDialog
-          title="放棄這場賽事？"
-          message="這會從本機移除這場賽事並回到起始畫面（雲端資料仍在，可用連結重開）。"
+          title="放棄這場草稿？"
+          message="這會從本機移除這場草稿（雲端資料仍在，可用連結重開）。若還有其他賽事會自動切換過去。"
           confirmLabel="確定放棄"
-          onConfirm={() => { discard(); setDialog(null); }}
+          onConfirm={() => { if (id) removeTournament(id); setDialog(null); }}
           onCancel={() => setDialog(null)}
         />
       )}
       {dialog === 'new' && (
         <ConfirmDialog
           title="開新賽事？"
-          message="這會離開目前這場、回到起始畫面建立新的一場。（目前這場的雲端資料仍在，用原本的連結還能重開。）"
+          message="回到起始畫面建立新的一場。目前這場會保留在「📋 我的賽事」清單裡，隨時可切回，不會不見。"
           confirmLabel="開新賽事"
-          onConfirm={() => { discard(); setDialog(null); }}
+          onConfirm={() => { newTournament(); setDialog(null); }}
           onCancel={() => setDialog(null)}
+        />
+      )}
+      {removeTarget && (
+        <ConfirmDialog
+          title="刪除這場賽事？"
+          message={`「${removeTarget.name}」會從這台裝置的清單移除（雲端資料仍在，用連結還能重開）。`}
+          confirmLabel="刪除"
+          onConfirm={() => { removeTournament(removeTarget.id); setRemoveTarget(null); }}
+          onCancel={() => setRemoveTarget(null)}
         />
       )}
       {revertTarget && (

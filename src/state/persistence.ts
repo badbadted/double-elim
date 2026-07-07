@@ -32,6 +32,15 @@ export function makeToken(): string {
   return `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`;
 }
 
+/** Summary of a tournament this device owns (has an editToken for). */
+export interface OwnedSummary {
+  id: string;
+  name: string;
+  status: Tournament['status'];
+  players: number;
+  updatedAt: number;
+}
+
 export const local = {
   getToken: (id: string) => safeGet(tokenKey(id)),
   setToken: (id: string, token: string) => safeSet(tokenKey(id), token),
@@ -43,6 +52,27 @@ export const local = {
   getLast: () => safeGet(LAST_KEY),
   setLast: (id: string) => safeSet(LAST_KEY, id),
   clear: (id: string) => { safeRemove(cacheKey(id)); safeRemove(tokenKey(id)); if (safeGet(LAST_KEY) === id) safeRemove(LAST_KEY); },
+
+  /** Every tournament this device holds an editToken for, newest first. */
+  listOwned: (): OwnedSummary[] => {
+    const out: OwnedSummary[] = [];
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !k.startsWith(tokenKey(''))) continue;
+        const id = k.slice(tokenKey('').length);
+        const t = local.getCache(id);
+        out.push({
+          id,
+          name: t?.name || '(未命名賽事)',
+          status: t?.status ?? 'DRAFT',
+          players: t?.players.length ?? 0,
+          updatedAt: t?.updatedAt ?? 0,
+        });
+      }
+    } catch { /* ignore */ }
+    return out.sort((a, b) => b.updatedAt - a.updatedAt);
+  },
 };
 
 export interface RemoteDoc { data: Tournament; rev: number; updatedAt: number; }

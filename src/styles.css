@@ -66,6 +66,50 @@ button { font-family: inherit; }
 .btn.warn:hover { background: #fef2f2; }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 
+/* ---- Tournament switcher ---- */
+.switcher { position: relative; display: inline-flex; }
+.switcher-btn { display: inline-flex; align-items: center; gap: 6px; }
+.switcher-btn .chev { font-size: 10px; color: var(--t2); }
+.switcher-backdrop { position: fixed; inset: 0; z-index: 40; }
+.switcher-menu {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 41; min-width: 280px;
+  background: #fff; border: 1px solid var(--s2); border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, .18); padding: 8px; max-height: 60vh; overflow-y: auto;
+}
+.switcher-head { font-size: 11px; font-weight: 700; color: var(--t2); padding: 6px 8px; letter-spacing: .04em; }
+.switcher-row { display: flex; align-items: stretch; gap: 4px; border-radius: 8px; }
+.switcher-row.current { background: var(--s1); }
+.switcher-pick {
+  flex: 1; display: flex; align-items: center; gap: 8px; background: transparent; border: none;
+  cursor: pointer; padding: 8px 10px; border-radius: 8px; text-align: left; min-width: 0;
+}
+.switcher-pick:hover { background: var(--s1); }
+.switcher-row .sw-name { flex: 1; font-weight: 600; font-size: 13.5px; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.switcher-row .sw-meta { font-size: 11.5px; color: var(--t2); white-space: nowrap; }
+.sw-del {
+  border: none; background: transparent; color: var(--lose); cursor: pointer; font-size: 13px;
+  padding: 0 10px; border-radius: 8px;
+}
+.sw-del:hover { background: #fee2e2; color: #b91c1c; }
+.switcher-new {
+  width: 100%; text-align: left; margin-top: 4px; border: none; border-top: 1px solid var(--s2);
+  background: transparent; color: var(--wb); font-weight: 700; font-size: 13.5px; cursor: pointer;
+  padding: 10px 10px 6px; border-radius: 0 0 8px 8px;
+}
+.switcher-new:hover { background: var(--wb-bg); }
+
+/* ---- Owned list (start screen) ---- */
+.owned-list { margin-top: 22px; border-top: 1px solid var(--s2); padding-top: 16px; }
+.owned-head { font-size: 12.5px; font-weight: 700; color: var(--t2); margin-bottom: 8px; }
+.owned-row {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  background: var(--s1); border: 1px solid var(--s2); border-radius: 9px; padding: 10px 12px;
+  margin-bottom: 6px; cursor: pointer;
+}
+.owned-row:hover { background: #fff; border-color: var(--wb); }
+.owned-row .sw-name { flex: 1; font-weight: 600; font-size: 14px; }
+.owned-row .sw-meta { font-size: 12px; color: var(--t2); }
+
 /* ---- Roster (DRAFT) ---- */
 .panel {
   background: var(--bg); border: 1px solid var(--s2); border-radius: 14px;

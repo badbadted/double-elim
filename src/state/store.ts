@@ -22,13 +22,18 @@ interface AppState {
   sync: SyncState;
   /** Admin-only: render the UI as a viewer would see it (no editing). */
   previewAsViewer: boolean;
+  /** Bumped whenever the owned-tournament list changes, to re-render switchers. */
+  listRev: number;
 
   init: () => Promise<void>;
   togglePreview: () => void;
   create: (name: string, names: string[]) => Promise<void>;
   open: (id: string) => Promise<void>;
   refresh: () => Promise<void>;
-  discard: () => void;
+  /** Leave the current tournament and go to the start screen (keeps all owned). */
+  newTournament: () => Promise<void>;
+  /** Delete a tournament from this device (cloud copy stays reachable by link). */
+  removeTournament: (id: string) => Promise<void>;
   shareUrl: () => string;
 
   reseed: () => void;
@@ -56,6 +61,7 @@ export const useStore = create<AppState>((set, get) => ({
   rev: 0,
   sync: 'idle',
   previewAsViewer: false,
+  listRev: 0,
 
   togglePreview: () => set((s) => ({ previewAsViewer: !s.previewAsViewer })),
 
@@ -73,7 +79,7 @@ export const useStore = create<AppState>((set, get) => ({
     const tournament = createTournament(name, names);
     local.setCache(id, tournament);
     setUrl(id);
-    set({ id, tournament, role: 'admin', rev: 0, sync: 'saving' });
+    set((s) => ({ id, tournament, role: 'admin', rev: 0, sync: 'saving', previewAsViewer: false, listRev: s.listRev + 1 }));
     try {
       const { rev } = await remote.put(id, tournament, token);
       set({ rev, sync: 'idle' });
@@ -83,9 +89,10 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   open: async (id) => {
+    await flushPush(); // don't lose a pending edit of the tournament we're leaving
     const token = local.getToken(id);
     const role: Role = token ? 'admin' : 'viewer';
-    set({ sync: 'loading', id, role });
+    set({ sync: 'loading', id, role, previewAsViewer: false });
     setUrl(id);
     local.setLast(id);
     try {
@@ -118,12 +125,27 @@ export const useStore = create<AppState>((set, get) => ({
     } catch { /* transient; keep showing last good state */ }
   },
 
-  discard: () => {
-    const { id } = get();
-    if (id) local.clear(id);
-    if (pushTimer) { clearTimeout(pushTimer); pushTimer = null; }
+  newTournament: async () => {
+    await flushPush();
     setUrl(null);
-    set({ id: null, tournament: null, role: 'viewer', rev: 0, sync: 'idle' });
+    set((s) => ({ id: null, tournament: null, role: 'viewer', rev: 0, sync: 'idle', previewAsViewer: false, listRev: s.listRev + 1 }));
+  },
+
+  removeTournament: async (rid) => {
+    if (pushTimer && get().id === rid) { clearTimeout(pushTimer); pushTimer = null; }
+    local.clear(rid);
+    if (get().id === rid) {
+      const owned = local.listOwned();
+      if (owned.length) {
+        await get().open(owned[0].id);
+        set((s) => ({ listRev: s.listRev + 1 }));
+      } else {
+        setUrl(null);
+        set((s) => ({ id: null, tournament: null, role: 'viewer', rev: 0, sync: 'idle', previewAsViewer: false, listRev: s.listRev + 1 }));
+      }
+    } else {
+      set((s) => ({ listRev: s.listRev + 1 }));
+    }
   },
 
   shareUrl: () => {
@@ -151,6 +173,23 @@ function applyEdit(get: () => AppState, fn: (t: Tournament) => Tournament) {
   local.setCache(state.id, next);
   useStore.setState({ tournament: next });
   schedulePush();
+}
+
+/** Immediately flush any pending debounced push (used before leaving/switching). */
+async function flushPush() {
+  if (!pushTimer) return;
+  clearTimeout(pushTimer);
+  pushTimer = null;
+  const { id, tournament } = useStore.getState();
+  if (!id || !tournament) return;
+  const token = local.getToken(id);
+  if (!token) return;
+  try {
+    const { rev } = await remote.put(id, tournament, token);
+    useStore.setState({ rev, sync: 'idle' });
+  } catch {
+    useStore.setState({ sync: 'offline' });
+  }
 }
 
 /** Debounced push of the current tournament to the server. */
