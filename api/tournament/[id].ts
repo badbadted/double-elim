@@ -14,16 +14,34 @@ import { Redis } from '@upstash/redis';
 
 /**
  * Lazily build the client so a missing binding returns a clean 500.
- * Accepts either the Vercel-KV-style vars or Upstash's own, whichever the
- * chosen integration injects.
+ *
+ * Upstash's Vercel integration lets the user pick a custom env-var prefix
+ * (KV_, STORAGE_, UPSTASH_REDIS_, …), so rather than hard-code one set we take
+ * the known names first and otherwise auto-discover any "<prefix>REST…URL/TOKEN"
+ * pair. This makes the function work whatever prefix was chosen at connect time.
  */
 function getRedis(): Redis {
-  const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
+  const env = process.env;
+  const url =
+    env.KV_REST_API_URL ??
+    env.UPSTASH_REDIS_REST_URL ??
+    findEnv((k, v) => /REST_?(API_)?URL$/.test(k) && v.startsWith('http'));
+  const token =
+    env.KV_REST_API_TOKEN ??
+    env.UPSTASH_REDIS_REST_TOKEN ??
+    findEnv((k, v) => /REST_?(API_)?TOKEN$/.test(k) && !/READ_ONLY/.test(k) && v.length > 0);
   if (!url || !token) {
-    throw new Error('KV not configured (need KV_REST_API_URL/TOKEN or UPSTASH_REDIS_REST_URL/TOKEN)');
+    throw new Error('KV not configured: no *_REST_API_URL / *_REST_API_TOKEN found in env');
   }
   return new Redis({ url, token });
+}
+
+/** First env value whose (key, value) matches the predicate. */
+function findEnv(pred: (key: string, value: string) => boolean): string | undefined {
+  for (const [k, v] of Object.entries(process.env)) {
+    if (typeof v === 'string' && pred(k, v)) return v;
+  }
+  return undefined;
 }
 
 interface Stored {
