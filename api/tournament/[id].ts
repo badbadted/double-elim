@@ -12,10 +12,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Redis } from '@upstash/redis';
 
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL as string,
-  token: process.env.KV_REST_API_TOKEN as string,
-});
+/** Lazily build the client so a missing KV binding returns a clean 500. */
+function getRedis(): Redis {
+  const url = process.env.KV_REST_API_URL;
+  const token = process.env.KV_REST_API_TOKEN;
+  if (!url || !token) throw new Error('KV not configured (KV_REST_API_URL / KV_REST_API_TOKEN missing)');
+  return new Redis({ url, token });
+}
 
 interface Stored {
   data: unknown;
@@ -34,6 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const key = `de:tournament:${id}`;
 
   try {
+    const redis = getRedis();
     if (req.method === 'GET') {
       const stored = await redis.get<Stored>(key);
       if (!stored) return res.status(404).json({ error: 'not found' });
