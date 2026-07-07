@@ -11,7 +11,10 @@ interface Props {
   match: Match;
   tournament: Tournament;
   interactive: boolean;
+  /** Admin may re-judge a decided match (undo + re-pick). */
+  canRevert: boolean;
   onPick: (matchId: string, side: 'a' | 'b') => void;
+  onRevert: (matchId: string) => void;
 }
 
 function slotText(r: ResolvedSlot): { text: string; seed: string; kind: 'player' | 'bye' | 'tbd' } {
@@ -20,7 +23,7 @@ function slotText(r: ResolvedSlot): { text: string; seed: string; kind: 'player'
   return { text: '待定', seed: '', kind: 'tbd' };
 }
 
-export function MatchCard({ match, tournament, interactive, onPick }: Props) {
+export function MatchCard({ match, tournament, interactive, canRevert, onPick, onRevert }: Props) {
   const { a, b, ready } = useMemo(() => {
     const mi = indexMatches(tournament.matches);
     const pi = indexPlayers(tournament.players);
@@ -31,6 +34,9 @@ export function MatchCard({ match, tournament, interactive, onPick }: Props) {
   }, [match, tournament]);
 
   const clickable = interactive && ready && match.winner === null;
+  // A match that was decided by a real user pick (not an auto bye) can be re-judged.
+  const decidedReal = match.winner !== null && a.state === 'player' && b.state === 'player';
+  const showRevert = canRevert && decidedReal;
 
   const renderSlot = (side: 'a' | 'b', r: ResolvedSlot) => {
     const info = slotText(r);
@@ -65,6 +71,13 @@ export function MatchCard({ match, tournament, interactive, onPick }: Props) {
     <div className={`match${clickable ? ' ready' : ''}`}>
       {renderSlot('a', a)}
       {renderSlot('b', b)}
+      {showRevert && (
+        <div className="revert-row">
+          <button className="revert-btn" onClick={() => onRevert(match.id)} title="改判：撤銷這場結果重新點選">
+            ↩ 改判
+          </button>
+        </div>
+      )}
     </div>
   );
 }

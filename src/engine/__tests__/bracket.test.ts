@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   createTournament, lockAndStart, advanceWinner, playableMatches,
   getChampion, isResetActive, computeStandings, resetToDraft, reseed,
+  revertMatch, revertImpact,
   nextPow2, standardSeedOrder,
   indexMatches, indexPlayers, resolveMatch, loserOf,
 } from '../index';
@@ -215,6 +216,46 @@ describe('draft controls', () => {
     const t = createTournament('T', names(4), { rand: mulberry32(1), now: 1 });
     const ready = t.matches.find((m) => m.bracket === 'WB' && m.round === 1 && m.winner === null)!;
     expect(advanceWinner(t, ready.id, 'a')).toEqual(t);
+  });
+});
+
+describe('revert (改判)', () => {
+  it('reverting the last pick with no downstream is lossless and re-openable', () => {
+    let t = lockAndStart(createTournament('T', names(8), { rand: mulberry32(11), now: 1 }), 2);
+    const first = playableMatches(t)[0];
+    t = advanceWinner(t, first.id, 'a');
+    expect(t.matches.find((m) => m.id === first.id)!.winner).toBe('a');
+    // Immediately reverting it should touch nothing downstream.
+    expect(revertImpact(t, first.id)).toBe(0);
+    t = revertMatch(t, first.id);
+    expect(t.matches.find((m) => m.id === first.id)!.winner).toBeNull();
+    // The match is playable again.
+    expect(playableMatches(t).some((m) => m.id === first.id)).toBe(true);
+  });
+
+  it('reverting an early match clears its decided descendants and leaves the bracket valid', () => {
+    // Play a full 8-player tournament, then revert a winners round-1 match.
+    let t = lockAndStart(createTournament('T', names(8), { rand: mulberry32(21), now: 1 }), 2);
+    let guard = 0;
+    while (t.status === 'RUNNING') { if (++guard > 400) throw new Error('loop'); const m = playableMatches(t)[0]; t = advanceWinner(t, m.id, 'a'); }
+    expect(t.status).toBe('FINISHED');
+    const wbR1 = t.matches.find((m) => m.bracket === 'WB' && m.round === 1 && m.winner !== null)!;
+    const impact = revertImpact(t, wbR1.id);
+    expect(impact).toBeGreaterThan(0); // a played-out bracket has downstream results
+    t = revertMatch(t, wbR1.id);
+    expect(t.status).toBe('RUNNING'); // no longer finished
+    expect(t.matches.find((m) => m.id === wbR1.id)!.winner).toBeNull();
+    expect(getChampion(t)).toBeNull();
+    // Finishing again from here still yields exactly one champion.
+    guard = 0;
+    while (t.status === 'RUNNING') { if (++guard > 400) throw new Error('loop'); const m = playableMatches(t)[0]; t = advanceWinner(t, m.id, 'a'); }
+    assertFinishedInvariants(t, 8);
+  });
+
+  it('revert is a no-op on an undecided match', () => {
+    const t = lockAndStart(createTournament('T', names(4), { rand: mulberry32(1), now: 1 }), 2);
+    const undecided = t.matches.find((m) => m.winner === null)!;
+    expect(revertMatch(t, undecided.id)).toEqual(t);
   });
 });
 

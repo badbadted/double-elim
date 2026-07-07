@@ -7,7 +7,7 @@ import { create } from 'zustand';
 import {
   type Tournament,
   createTournament, reseed, addPlayer, removePlayer, renamePlayer,
-  setResetEnabled, lockAndStart, resetToDraft, advanceWinner,
+  setResetEnabled, lockAndStart, resetToDraft, advanceWinner, revertMatch,
 } from '../engine';
 import { local, remote, makeId, makeToken } from './persistence';
 
@@ -20,8 +20,11 @@ interface AppState {
   role: Role;
   rev: number;
   sync: SyncState;
+  /** Admin-only: render the UI as a viewer would see it (no editing). */
+  previewAsViewer: boolean;
 
   init: () => Promise<void>;
+  togglePreview: () => void;
   create: (name: string, names: string[]) => Promise<void>;
   open: (id: string) => Promise<void>;
   refresh: () => Promise<void>;
@@ -36,6 +39,7 @@ interface AppState {
   start: () => void;
   backToDraft: () => void;
   pickWinner: (matchId: string, side: 'a' | 'b') => void;
+  revertMatch: (matchId: string) => void;
 }
 
 let pushTimer: ReturnType<typeof setTimeout> | null = null;
@@ -51,6 +55,9 @@ export const useStore = create<AppState>((set, get) => ({
   role: 'viewer',
   rev: 0,
   sync: 'idle',
+  previewAsViewer: false,
+
+  togglePreview: () => set((s) => ({ previewAsViewer: !s.previewAsViewer })),
 
   init: async () => {
     const params = new URLSearchParams(location.search);
@@ -132,6 +139,7 @@ export const useStore = create<AppState>((set, get) => ({
   start: () => applyEdit(get, (t) => lockAndStart(t)),
   backToDraft: () => applyEdit(get, (t) => resetToDraft(t)),
   pickWinner: (matchId, side) => applyEdit(get, (t) => advanceWinner(t, matchId, side)),
+  revertMatch: (matchId) => applyEdit(get, (t) => revertMatch(t, matchId)),
 }));
 
 /** Apply an engine mutation locally (admin only), cache it, and schedule a push. */

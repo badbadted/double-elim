@@ -11,7 +11,9 @@ import { MatchCard } from './MatchCard';
 interface Props {
   tournament: Tournament;
   interactive: boolean;
+  canRevert: boolean;
   onPick: (matchId: string, side: 'a' | 'b') => void;
+  onRevert: (matchId: string) => void;
 }
 
 /** Group a bracket's matches by round number, ordered. */
@@ -25,7 +27,7 @@ function byRound(matches: Match[]): Match[][] {
   return [...rounds.keys()].sort((x, y) => x - y).map((r) => rounds.get(r)!.sort((a, b) => a.order - b.order));
 }
 
-export function BracketView({ tournament, interactive, onPick }: Props) {
+export function BracketView({ tournament, interactive, canRevert, onPick, onRevert }: Props) {
   const { wb, lb, gf, gfr } = useMemo(() => ({
     wb: byRound(tournament.matches.filter((m) => m.bracket === 'WB')),
     lb: byRound(tournament.matches.filter((m) => m.bracket === 'LB')),
@@ -43,7 +45,7 @@ export function BracketView({ tournament, interactive, onPick }: Props) {
           <div className="round tall" key={i}>
             <div className="round-title">{matches[0]?.label ?? ''}</div>
             {matches.map((m) => (
-              <MatchCard key={m.id} match={m} tournament={tournament} interactive={interactive} onPick={onPick} />
+              <MatchCard key={m.id} match={m} tournament={tournament} interactive={interactive} canRevert={canRevert} onPick={onPick} onRevert={onRevert} />
             ))}
           </div>
         ))}
@@ -61,13 +63,13 @@ export function BracketView({ tournament, interactive, onPick }: Props) {
           {gf && (
             <div className="round">
               <div className="round-title">{gf.label}</div>
-              <MatchCard match={gf} tournament={tournament} interactive={interactive} onPick={onPick} />
+              <MatchCard match={gf} tournament={tournament} interactive={interactive} canRevert={canRevert} onPick={onPick} onRevert={onRevert} />
             </div>
           )}
           {gfr && resetLive && (
             <div className="round">
               <div className="round-title">{gfr.label}</div>
-              <MatchCard match={gfr} tournament={tournament} interactive={interactive} onPick={onPick} />
+              <MatchCard match={gfr} tournament={tournament} interactive={interactive} canRevert={canRevert} onPick={onPick} onRevert={onRevert} />
             </div>
           )}
         </div>

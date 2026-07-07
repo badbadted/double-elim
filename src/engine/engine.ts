@@ -175,6 +175,60 @@ export function settleByes(t: Tournament): Tournament {
   return { ...t, matches };
 }
 
+/** Match ids whose result depends (transitively) on `matchId`, excluding it. */
+function downstreamOf(t: Tournament, matchId: string): Set<string> {
+  const dependents = new Map<string, string[]>();
+  for (const m of t.matches) {
+    for (const slot of [m.a, m.b]) {
+      if (slot.type === 'winner' || slot.type === 'loser') {
+        const arr = dependents.get(slot.matchId) ?? [];
+        arr.push(m.id);
+        dependents.set(slot.matchId, arr);
+      }
+    }
+  }
+  const affected = new Set<string>();
+  const stack = [matchId];
+  while (stack.length) {
+    const cur = stack.pop()!;
+    for (const dep of dependents.get(cur) ?? []) {
+      if (!affected.has(dep)) { affected.add(dep); stack.push(dep); }
+    }
+  }
+  return affected;
+}
+
+/**
+ * How many *already-decided* matches would also be cleared by reverting
+ * `matchId` (the downstream cascade), so the UI can warn before wiping results.
+ */
+export function revertImpact(t: Tournament, matchId: string): number {
+  const byId = indexMatches(t.matches);
+  let n = 0;
+  for (const id of downstreamOf(t, matchId)) {
+    if (byId.get(id)?.winner != null) n++;
+  }
+  return n;
+}
+
+/**
+ * Undo a match result. Clears the match and every downstream match that
+ * consumed its winner/loser (their participants changed, so their results are
+ * no longer valid), re-settles byes, and recomputes status. RUNNING/FINISHED.
+ */
+export function revertMatch(t: Tournament, matchId: string, now = Date.now()): Tournament {
+  if (t.status !== 'RUNNING' && t.status !== 'FINISHED') return t;
+  const target = t.matches.find((m) => m.id === matchId);
+  if (!target || target.winner === null) return t;
+  const clear = downstreamOf(t, matchId);
+  clear.add(matchId);
+  const matches = t.matches.map((m) => (clear.has(m.id) ? { ...m, winner: null as Match['winner'] } : m));
+  let next = settleByes({ ...t, matches, updatedAt: now });
+  const status: TournamentStatus = getChampion(next) ? 'FINISHED' : 'RUNNING';
+  if (status !== next.status) next = { ...next, status };
+  return next;
+}
+
 /** Record the winner of a ready match, then settle byes and update status. */
 export function advanceWinner(t: Tournament, matchId: string, side: 'a' | 'b', now = Date.now()): Tournament {
   if (t.status !== 'RUNNING') return t;

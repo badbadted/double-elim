@@ -30,6 +30,8 @@ export {
   lockAndStart,
   resetToDraft,
   advanceWinner,
+  revertMatch,
+  revertImpact,
   settleByes,
   playableMatches,
   getChampion,

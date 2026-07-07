@@ -6,7 +6,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from './state/store';
-import { computeStandings, playableMatches } from './engine';
+import { computeStandings, playableMatches, revertImpact } from './engine';
 import { StartScreen } from './components/StartScreen';
 import { RosterPanel } from './components/RosterPanel';
 import { BracketView } from './components/BracketView';
@@ -21,8 +21,12 @@ const SYNC_TEXT: Record<string, string> = {
 };
 
 export default function App() {
-  const { id, tournament, role, sync, init, refresh, reseed, start, backToDraft, discard, pickWinner, shareUrl } = useStore();
+  const {
+    id, tournament, role, sync, previewAsViewer,
+    init, refresh, togglePreview, reseed, start, backToDraft, discard, pickWinner, revertMatch, shareUrl,
+  } = useStore();
   const [dialog, setDialog] = useState<Dialog>(null);
+  const [revertTarget, setRevertTarget] = useState<{ matchId: string; impact: number } | null>(null);
   const [copied, setCopied] = useState(false);
   const started = useRef(false);
 
@@ -51,6 +55,15 @@ export default function App() {
   if (!tournament) return <StartScreen />;
 
   const isAdmin = role === 'admin';
+  const effectiveAdmin = isAdmin && !previewAsViewer; // admin previewing sees the viewer UI
+  const canRevert = effectiveAdmin && (tournament.status === 'RUNNING' || tournament.status === 'FINISHED');
+
+  const handleRevert = (matchId: string) => {
+    const impact = revertImpact(tournament, matchId);
+    if (impact > 0) setRevertTarget({ matchId, impact });
+    else revertMatch(matchId);
+  };
+
   const statusLabel = { DRAFT: '草稿 DRAFT', RUNNING: '比賽中 RUNNING', FINISHED: '完賽 FINISHED' }[tournament.status];
   const statusClass = { DRAFT: 'draft', RUNNING: 'running', FINISHED: 'finished' }[tournament.status];
   const remaining = tournament.status === 'RUNNING' ? playableMatches(tournament).length : 0;
@@ -72,7 +85,14 @@ export default function App() {
   return (
     <div className="app">
       <div className="app-title">🏁 {tournament.name}</div>
-      <div className="app-sub">雙敗賽制隨機排位系統{!isAdmin && ' · 👁 觀看模式（即時更新）'}</div>
+      <div className="app-sub">雙敗賽制隨機排位系統{!effectiveAdmin && ' · 👁 觀看模式（即時更新）'}</div>
+
+      {isAdmin && previewAsViewer && (
+        <div className="preview-banner">
+          👁 觀看者預覽中——這就是別人開連結看到的樣子（唯讀）。
+          <button className="btn" onClick={() => togglePreview()}>✏ 返回管理</button>
+        </div>
+      )}
 
       <div className="control-bar">
         <span className={`badge ${statusClass}`}>● {statusLabel}</span>
@@ -86,18 +106,23 @@ export default function App() {
             {copied ? '✓ 已複製' : '🔗 複製觀看連結'}
           </button>
         )}
+        {isAdmin && (
+          <button className="btn" onClick={() => togglePreview()} title="切換到觀看者視角預覽">
+            {previewAsViewer ? '✏ 返回管理' : '👁 觀看者預覽'}
+          </button>
+        )}
 
-        {isAdmin && tournament.status === 'DRAFT' && (
+        {effectiveAdmin && tournament.status === 'DRAFT' && (
           <>
             <button className="btn" onClick={() => reseed()}>🎲 重新抽籤</button>
             <button className="btn" onClick={() => setDialog('discard')}>放棄賽事</button>
             <button className="btn primary" disabled={tournament.players.length < 2} onClick={() => start()}>鎖定開賽 →</button>
           </>
         )}
-        {isAdmin && tournament.status === 'RUNNING' && (
+        {effectiveAdmin && tournament.status === 'RUNNING' && (
           <button className="btn warn" onClick={() => setDialog('reset')}>重置（清空戰績）</button>
         )}
-        {isAdmin && tournament.status === 'FINISHED' && (
+        {effectiveAdmin && tournament.status === 'FINISHED' && (
           <>
             <button className="btn" onClick={exportResults}>📤 匯出結果</button>
             <button className="btn warn" onClick={() => setDialog('reset')}>重置</button>
@@ -105,13 +130,19 @@ export default function App() {
         )}
       </div>
 
-      {isAdmin && tournament.status === 'DRAFT' && <RosterPanel tournament={tournament} />}
-      {!isAdmin && tournament.status === 'DRAFT' && (
+      {effectiveAdmin && tournament.status === 'DRAFT' && <RosterPanel tournament={tournament} />}
+      {!effectiveAdmin && tournament.status === 'DRAFT' && (
         <div className="panel"><p className="hint" style={{ margin: 0 }}>賽事尚未開始（草稿中），開賽後這裡會即時顯示對戰進度。</p></div>
       )}
       {tournament.status === 'FINISHED' && <Standings tournament={tournament} />}
 
-      <BracketView tournament={tournament} interactive={isAdmin && tournament.status === 'RUNNING'} onPick={pickWinner} />
+      <BracketView
+        tournament={tournament}
+        interactive={effectiveAdmin && tournament.status === 'RUNNING'}
+        canRevert={canRevert}
+        onPick={pickWinner}
+        onRevert={handleRevert}
+      />
 
       {dialog === 'reset' && (
         <ConfirmDialog
@@ -129,6 +160,15 @@ export default function App() {
           confirmLabel="確定放棄"
           onConfirm={() => { discard(); setDialog(null); }}
           onCancel={() => setDialog(null)}
+        />
+      )}
+      {revertTarget && (
+        <ConfirmDialog
+          title="改判這場？"
+          message={`這會撤銷這場結果，並一併清除受影響的後續 ${revertTarget.impact} 場戰績（需重打）。確定要改判嗎？`}
+          confirmLabel="確定改判"
+          onConfirm={() => { revertMatch(revertTarget.matchId); setRevertTarget(null); }}
+          onCancel={() => setRevertTarget(null)}
         />
       )}
     </div>
