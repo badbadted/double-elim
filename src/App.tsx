@@ -13,7 +13,7 @@ import { BracketView } from './components/BracketView';
 import { Standings } from './components/Standings';
 import { ConfirmDialog } from './components/ConfirmDialog';
 
-type Dialog = 'reset' | 'discard' | null;
+type Dialog = 'reset' | 'discard' | 'new' | null;
 
 const SYNC_TEXT: Record<string, string> = {
   idle: '☁ 已同步', saving: '⟳ 儲存中…', offline: '⚠ 離線（僅本機）',
@@ -120,11 +120,15 @@ export default function App() {
           </>
         )}
         {effectiveAdmin && tournament.status === 'RUNNING' && (
-          <button className="btn warn" onClick={() => setDialog('reset')}>重置（清空戰績）</button>
+          <>
+            <button className="btn" onClick={() => setDialog('new')}>＋ 新賽事</button>
+            <button className="btn warn" onClick={() => setDialog('reset')}>重置（清空戰績）</button>
+          </>
         )}
         {effectiveAdmin && tournament.status === 'FINISHED' && (
           <>
             <button className="btn" onClick={exportResults}>📤 匯出結果</button>
+            <button className="btn primary" onClick={() => setDialog('new')}>＋ 新賽事</button>
             <button className="btn warn" onClick={() => setDialog('reset')}>重置</button>
           </>
         )}
@@ -158,6 +162,15 @@ export default function App() {
           title="放棄這場賽事？"
           message="這會從本機移除這場賽事並回到起始畫面（雲端資料仍在，可用連結重開）。"
           confirmLabel="確定放棄"
+          onConfirm={() => { discard(); setDialog(null); }}
+          onCancel={() => setDialog(null)}
+        />
+      )}
+      {dialog === 'new' && (
+        <ConfirmDialog
+          title="開新賽事？"
+          message="這會離開目前這場、回到起始畫面建立新的一場。（目前這場的雲端資料仍在，用原本的連結還能重開。）"
+          confirmLabel="開新賽事"
           onConfirm={() => { discard(); setDialog(null); }}
           onCancel={() => setDialog(null)}
         />
