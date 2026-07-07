@@ -12,11 +12,17 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Redis } from '@upstash/redis';
 
-/** Lazily build the client so a missing KV binding returns a clean 500. */
+/**
+ * Lazily build the client so a missing binding returns a clean 500.
+ * Accepts either the Vercel-KV-style vars or Upstash's own, whichever the
+ * chosen integration injects.
+ */
 function getRedis(): Redis {
-  const url = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
-  if (!url || !token) throw new Error('KV not configured (KV_REST_API_URL / KV_REST_API_TOKEN missing)');
+  const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) {
+    throw new Error('KV not configured (need KV_REST_API_URL/TOKEN or UPSTASH_REDIS_REST_URL/TOKEN)');
+  }
   return new Redis({ url, token });
 }
 
