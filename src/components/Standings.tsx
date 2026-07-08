@@ -18,6 +18,7 @@ export function Standings({ tournament }: { tournament: Tournament }) {
             <div className="k">冠軍 CHAMPION</div>
             <div className="v">{champion.player.name}</div>
           </div>
+          <img className="champ-mascot" src={`${import.meta.env.BASE_URL}illustrations/mascot-squirrel.jpeg`} alt="" />
         </div>
       )}
       <h3 style={{ marginBottom: 12 }}>🏅 最終排名</h3>

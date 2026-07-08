@@ -22,6 +22,7 @@ export function StartScreen() {
   return (
     <div className="start">
       <div className="card">
+        <img className="start-mascot" src={`${import.meta.env.BASE_URL}illustrations/mascot-shiba.jpeg`} alt="" />
         <h1>雙敗賽制隨機排位系統</h1>
         <p>輸入參賽名單，一鍵隨機排入雙敗淘汰對戰表。開賽前可重複抽籤比較不同組合。</p>
 
