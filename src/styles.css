@@ -14,7 +14,7 @@
   --lb-bg: #fef3c7;
   --gf: #7c3aed;
   --gf-bg: #ede9fe;
-  --head-font: 'M PLUS Rounded 1c', -apple-system, "Noto Sans TC", system-ui, sans-serif;
+  --head-font: 'Huninn', 'M PLUS Rounded 1c', -apple-system, "Noto Sans TC", system-ui, sans-serif;
   --radius: 10px;
   --shadow: 0 1px 3px rgba(15, 23, 42, .08), 0 1px 2px rgba(15, 23, 42, .04);
 }
@@ -27,7 +27,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'M PLUS Rounded 1c', -apple-system, "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+  font-family: 'Huninn', 'M PLUS Rounded 1c', -apple-system, "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
   /* warm-storybook 底：頂部暖色漸層（襯底色） */
   background: linear-gradient(180deg, #fffbeb 0%, #ffffff 420px);
   background-attachment: fixed;
