@@ -28,17 +28,26 @@
 
 body {
   font-family: -apple-system, "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
-  /* warm-storybook 底圖（參考 niujiu）：淡琥珀點點紋理 + 頂部暖色漸層 */
-  background:
-    radial-gradient(circle, rgba(217, 119, 6, 0.05) 1px, transparent 1px),
-    linear-gradient(180deg, #fffbeb 0%, #ffffff 360px);
-  background-size: 22px 22px, 100% 100%;
+  /* warm-storybook 底：頂部暖色漸層（襯底色） */
+  background: linear-gradient(180deg, #fffbeb 0%, #ffffff 420px);
   background-attachment: fixed;
-  background-color: #ffffff;
+  background-color: #fffdf7;
   color: var(--t1);
   line-height: 1.5;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+}
+
+/* 妞揪風插畫底圖：獎盃/獎牌/星星+動物選手圖樣，multiply 讓米底消失只留淡圖案 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: url("/illustrations/bg-pattern.jpeg") center top / 760px auto repeat;
+  mix-blend-mode: multiply;
+  opacity: 0.38;
+  pointer-events: none;
 }
 
 button { font-family: inherit; }
