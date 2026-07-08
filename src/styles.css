@@ -9,11 +9,11 @@
   --win-line: #10b981;
   --lose: #94a3b8;
   --wb: #2563eb;
-  --wb-bg: #dbeafe;
+  --wb-bg: #f2f7ff;
   --lb: #d97706;
-  --lb-bg: #fef3c7;
+  --lb-bg: #fffdf3;
   --gf: #7c3aed;
-  --gf-bg: #ede9fe;
+  --gf-bg: #f8f6ff;
   --head-font: 'Huninn', 'M PLUS Rounded 1c', -apple-system, "Noto Sans TC", system-ui, sans-serif;
   --radius: 10px;
   --shadow: 0 1px 3px rgba(15, 23, 42, .08), 0 1px 2px rgba(15, 23, 42, .04);
@@ -44,9 +44,9 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: url("/illustrations/bg-pattern.jpeg") center top / 760px auto repeat;
+  background: url("/illustrations/bg-pattern.jpeg") center top / 820px auto repeat;
   mix-blend-mode: multiply;
-  opacity: 0.38;
+  opacity: 0.16;
   pointer-events: none;
 }
 
@@ -183,9 +183,9 @@ button { font-family: inherit; }
 
 /* ---- Bracket ---- */
 .zone { border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; overflow-x: auto; }
-.zone.wb { background: var(--wb-bg); border: 1px solid #93c5fd; }
-.zone.lb { background: var(--lb-bg); border: 1px solid #fcd34d; }
-.zone.gf { background: var(--gf-bg); border: 1px solid #c4b5fd; }
+.zone.wb { background: var(--wb-bg); border: 1px solid #e2e8f0; }
+.zone.lb { background: var(--lb-bg); border: 1px solid #e8e2d0; }
+.zone.gf { background: var(--gf-bg); border: 1px solid #e5e0f0; }
 .region-label { font-size: 14.5px; font-weight: 800; letter-spacing: .04em; margin-bottom: 14px; }
 .zone.wb .region-label { color: var(--wb); }
 .zone.lb .region-label { color: var(--lb); }
