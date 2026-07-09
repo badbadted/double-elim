@@ -8,7 +8,7 @@ import { nextPow2 } from '../engine';
 import { useStore } from '../state/store';
 
 export function RosterPanel({ tournament }: { tournament: Tournament }) {
-  const { renamePlayer, removePlayer, addPlayer, toggleReset } = useStore();
+  const { renamePlayer, setNickname, removePlayer, addPlayer, toggleReset } = useStore();
   const [draftName, setDraftName] = useState('');
 
   const submitAdd = () => {
@@ -25,18 +25,29 @@ export function RosterPanel({ tournament }: { tournament: Tournament }) {
       <h3>參賽名單（{tournament.players.length} 人）</h3>
       <p className="hint">
         對戰表大小 {nextPow2(Math.max(2, tournament.players.length))} 格
-        {byes > 0 ? `，${byes} 個輪空自動散佈` : '，剛好填滿無輪空'}。開賽前可自由增刪與改名。
+        {byes > 0 ? `，${byes} 個輪空自動散佈` : '，剛好填滿無輪空'}。可填綽號，對戰表會以綽號顯示（沒填則用本名）。
       </p>
 
       <div className="roster">
         {tournament.players.map((p) => (
           <div className="roster-row" key={p.id}>
             <span className="seed">{p.seed}</span>
-            <input
-              value={p.name}
-              onChange={(e) => renamePlayer(p.id, e.target.value)}
-              aria-label={`第 ${p.seed} 位選手名稱`}
-            />
+            <div className="roster-fields">
+              <input
+                className="rn-name"
+                value={p.name}
+                onChange={(e) => renamePlayer(p.id, e.target.value)}
+                placeholder="本名"
+                aria-label={`第 ${p.seed} 位選手本名`}
+              />
+              <input
+                className="rn-nick"
+                value={p.nickname ?? ''}
+                onChange={(e) => setNickname(p.id, e.target.value)}
+                placeholder="綽號（選填 · 晉級顯示用）"
+                aria-label={`第 ${p.seed} 位選手綽號`}
+              />
+            </div>
             <button className="del" onClick={() => removePlayer(p.id)} title="移除" aria-label={`移除 ${p.name}`}>
               ✕
             </button>

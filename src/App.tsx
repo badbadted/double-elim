@@ -6,7 +6,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from './state/store';
-import { computeStandings, playableMatches, revertImpact } from './engine';
+import { computeStandings, playableMatches, revertImpact, displayName } from './engine';
 import { StartScreen } from './components/StartScreen';
 import { RosterPanel } from './components/RosterPanel';
 import { BracketView } from './components/BracketView';
@@ -77,7 +77,7 @@ export default function App() {
   };
 
   const exportResults = () => {
-    const lines = computeStandings(tournament).map((r) => `${r.rank}. ${r.player.name}${r.title ? `（${r.title}）` : ''}`);
+    const lines = computeStandings(tournament).map((r) => `${r.rank}. ${displayName(r.player)}${r.title ? `（${r.title}）` : ''}`);
     const blob = new Blob([`${tournament.name} 最終排名\n\n${lines.join('\n')}\n`], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

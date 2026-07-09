@@ -10,6 +10,8 @@
 export interface Player {
   id: string;
   name: string;
+  /** Optional nickname; when set it is shown in the bracket instead of `name`. */
+  nickname?: string;
   /** 1-based seed number assigned at draw time (used for bracket placement). */
   seed: number;
 }

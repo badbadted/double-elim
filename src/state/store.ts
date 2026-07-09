@@ -7,7 +7,7 @@ import { create } from 'zustand';
 import {
   type Tournament,
   createTournament, reseed, addPlayer, removePlayer, renamePlayer,
-  setResetEnabled, lockAndStart, resetToDraft, advanceWinner, revertMatch,
+  setNickname, setResetEnabled, lockAndStart, resetToDraft, advanceWinner, revertMatch,
 } from '../engine';
 import { local, remote, makeId, makeToken } from './persistence';
 
@@ -40,6 +40,7 @@ interface AppState {
   addPlayer: (name: string) => void;
   removePlayer: (id: string) => void;
   renamePlayer: (id: string, name: string) => void;
+  setNickname: (id: string, nickname: string) => void;
   toggleReset: (enabled: boolean) => void;
   start: () => void;
   backToDraft: () => void;
@@ -157,6 +158,7 @@ export const useStore = create<AppState>((set, get) => ({
   addPlayer: (name) => applyEdit(get, (t) => addPlayer(t, name, `p_${makeId()}`)),
   removePlayer: (pid) => applyEdit(get, (t) => removePlayer(t, pid)),
   renamePlayer: (pid, name) => applyEdit(get, (t) => renamePlayer(t, pid, name)),
+  setNickname: (pid, nickname) => applyEdit(get, (t) => setNickname(t, pid, nickname)),
   toggleReset: (enabled) => applyEdit(get, (t) => setResetEnabled(t, enabled)),
   start: () => applyEdit(get, (t) => lockAndStart(t)),
   backToDraft: () => applyEdit(get, (t) => resetToDraft(t)),

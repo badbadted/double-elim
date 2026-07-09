@@ -95,6 +95,13 @@ export function renamePlayer(t: Tournament, id: string, name: string, now = Date
   return { ...t, players, updatedAt: now };
 }
 
+/** Set one player's nickname (shown in the bracket). DRAFT only. */
+export function setNickname(t: Tournament, id: string, nickname: string, now = Date.now()): Tournament {
+  if (t.status !== 'DRAFT') return t;
+  const players = t.players.map((p) => (p.id === id ? { ...p, nickname } : p));
+  return { ...t, players, updatedAt: now };
+}
+
 /** Toggle the grand-final reset (復活賽). DRAFT only. */
 export function setResetEnabled(t: Tournament, enabled: boolean, now = Date.now()): Tournament {
   if (t.status !== 'DRAFT' || t.resetEnabled === enabled) return t;

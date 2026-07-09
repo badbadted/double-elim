@@ -1,6 +1,6 @@
 /** Champion celebration banner shown when the tournament is FINISHED. */
 import type { Tournament } from '../engine';
-import { getChampion } from '../engine';
+import { getChampion, displayName } from '../engine';
 
 export function Standings({ tournament }: { tournament: Tournament }) {
   const champion = getChampion(tournament);
@@ -11,7 +11,7 @@ export function Standings({ tournament }: { tournament: Tournament }) {
       <div className="cup">🏆</div>
       <div className="txt">
         <div className="k">冠軍 CHAMPION</div>
-        <div className="v">{champion.name}</div>
+        <div className="v">{displayName(champion)}</div>
       </div>
       <img className="champ-mascot" src={`${import.meta.env.BASE_URL}illustrations/mascot-squirrel.jpeg`} alt="" />
     </div>

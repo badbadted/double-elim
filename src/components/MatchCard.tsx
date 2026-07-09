@@ -5,7 +5,7 @@
  */
 import { useMemo } from 'react';
 import type { Match, ResolvedSlot, Tournament } from '../engine';
-import { indexMatches, indexPlayers, resolveMatch, classifyMatch } from '../engine';
+import { indexMatches, indexPlayers, resolveMatch, classifyMatch, displayName } from '../engine';
 
 interface Props {
   match: Match;
@@ -18,7 +18,7 @@ interface Props {
 }
 
 function slotText(r: ResolvedSlot): { text: string; seed: string; kind: 'player' | 'bye' | 'tbd' } {
-  if (r.state === 'player') return { text: r.player.name, seed: String(r.player.seed), kind: 'player' };
+  if (r.state === 'player') return { text: displayName(r.player), seed: String(r.player.seed), kind: 'player' };
   if (r.state === 'bye') return { text: '輪空 bye', seed: '', kind: 'bye' };
   return { text: '待定', seed: '', kind: 'tbd' };
 }

@@ -12,6 +12,7 @@ export {
 export {
   indexMatches,
   indexPlayers,
+  displayName,
   resolveSlot,
   resolveMatch,
   winnerOf,
@@ -26,6 +27,7 @@ export {
   addPlayer,
   removePlayer,
   renamePlayer,
+  setNickname,
   setResetEnabled,
   lockAndStart,
   resetToDraft,

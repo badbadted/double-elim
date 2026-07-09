@@ -22,6 +22,12 @@ export function indexPlayers(players: Player[]): PlayerIndex {
   return idx;
 }
 
+/** The name to show in the bracket: nickname if set, otherwise the real name. */
+export function displayName(p: Player): string {
+  const nick = p.nickname?.trim();
+  return nick ? nick : p.name;
+}
+
 /** Resolve one slot ref to a concrete player, a bye, or 'tbd'. */
 export function resolveSlot(ref: SlotRef, mi: MatchIndex, pi: PlayerIndex): ResolvedSlot {
   switch (ref.type) {
