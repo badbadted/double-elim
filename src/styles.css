@@ -1,9 +1,9 @@
 :root {
   --bg: #ffffff;
-  --s1: #f8fafc;
-  --s2: #e2e8f0;
-  --t1: #1e293b;
-  --t2: #64748b;
+  --s1: #faf7f1;
+  --s2: #e6ddce;
+  --t1: #4a3f35;
+  --t2: #8a7d6d;
   --win: #059669;
   --win-bg: #d1fae5;
   --win-line: #10b981;
@@ -14,9 +14,9 @@
   --lb-bg: #fffdf3;
   --gf: #7c3aed;
   --gf-bg: #f8f6ff;
-  --head-font: 'Huninn', 'M PLUS Rounded 1c', -apple-system, "Noto Sans TC", system-ui, sans-serif;
-  --radius: 10px;
-  --shadow: 0 1px 3px rgba(15, 23, 42, .08), 0 1px 2px rgba(15, 23, 42, .04);
+  --head-font: 'Fredoka', 'Huninn', 'M PLUS Rounded 1c', -apple-system, "Noto Sans TC", system-ui, sans-serif;
+  --radius: 14px;
+  --shadow: 0 2px 5px rgba(120, 83, 44, .09), 0 1px 2px rgba(120, 83, 44, .06);
 }
 
 /* Rounded storybook headings (Kosugi Maru) */
@@ -27,7 +27,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Huninn', 'M PLUS Rounded 1c', -apple-system, "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+  font-family: 'Fredoka', 'Huninn', 'M PLUS Rounded 1c', -apple-system, "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
   /* warm-storybook 底：頂部暖色漸層（襯底色） */
   background: linear-gradient(180deg, #fffbeb 0%, #ffffff 420px);
   background-attachment: fixed;
@@ -77,11 +77,12 @@ button { font-family: inherit; }
 .badge.finished { background: #e0e7ff; color: #3730a3; }
 
 .btn {
-  font-size: 14px; font-weight: 600; padding: 9px 15px; border-radius: 8px;
-  border: 1px solid var(--s2); background: #fff; color: var(--t1); cursor: pointer;
-  transition: background .12s, border-color .12s;
+  font-size: 14px; font-weight: 600; padding: 9px 16px; border-radius: 999px;
+  border: 1.5px solid var(--s2); background: #fff; color: var(--t1); cursor: pointer;
+  box-shadow: var(--shadow); transition: transform .12s, box-shadow .12s, background .12s;
 }
-.btn:hover { background: var(--s1); }
+.btn:hover { background: var(--s1); transform: translateY(-1px); box-shadow: 0 4px 8px rgba(120,83,44,.12); }
+.btn:active { transform: translateY(0); }
 .btn.primary { background: var(--t1); color: #fff; border-color: var(--t1); }
 .btn.primary:hover { background: #0f172a; }
 .btn.warn { background: #fff; color: #b91c1c; border-color: #fecaca; }
@@ -182,14 +183,18 @@ button { font-family: inherit; }
 .toggle-note { font-size: 12px; color: var(--t2); margin-top: 4px; }
 
 /* ---- Bracket ---- */
-.zone { border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; overflow-x: auto; }
-.zone.wb { background: var(--wb-bg); border: 1px solid #e2e8f0; }
-.zone.lb { background: var(--lb-bg); border: 1px solid #e8e2d0; }
-.zone.gf { background: var(--gf-bg); border: 1px solid #e5e0f0; }
-.region-label { font-size: 14.5px; font-weight: 800; letter-spacing: .04em; margin-bottom: 14px; }
-.zone.wb .region-label { color: var(--wb); }
-.zone.lb .region-label { color: var(--lb); }
-.zone.gf .region-label { color: var(--gf); }
+.zone { border-radius: 20px; padding: 18px 20px; margin-bottom: 18px; overflow-x: auto; }
+.zone.wb { background: var(--wb-bg); border: 1.5px solid var(--s2); }
+.zone.lb { background: var(--lb-bg); border: 1.5px solid var(--s2); }
+.zone.gf { background: var(--gf-bg); border: 1.5px solid var(--s2); }
+.region-label {
+  display: inline-block; font-size: 14.5px; font-weight: 800; letter-spacing: .02em;
+  margin-bottom: 16px; padding: 5px 14px; border-radius: 999px;
+  border: 1.5px solid var(--s2); box-shadow: var(--shadow);
+}
+.zone.wb .region-label { color: #1d4ed8; background: #eaf2ff; }
+.zone.lb .region-label { color: #b45309; background: #fff5df; }
+.zone.gf .region-label { color: #6d28d9; background: #f0eaff; }
 
 .rounds { display: flex; gap: 22px; align-items: flex-start; min-width: max-content; }
 .round { display: flex; flex-direction: column; gap: 14px; min-width: 168px; }
@@ -200,7 +205,7 @@ button { font-family: inherit; }
 }
 
 .match {
-  background: #fff; border: 1px solid #eef2f6; border-radius: 9px; overflow: hidden;
+  background: #fff; border: 1.5px solid var(--s2); border-radius: 13px; overflow: hidden;
   font-size: 15px; box-shadow: var(--shadow);
 }
 .zone.wb .match { border-left: 3px solid var(--wb); }
@@ -209,7 +214,7 @@ button { font-family: inherit; }
 .match.ready { outline: 2px solid var(--wb); outline-offset: 1px; }
 
 .slot { display: flex; align-items: center; gap: 8px; padding: 9px 12px; transition: background .12s; }
-.slot + .slot { border-top: 1px solid #eef2f6; }
+.slot + .slot { border-top: 1.5px solid #f0e9dd; }
 .slot.clickable { cursor: pointer; }
 .slot.clickable:hover { background: var(--s1); }
 .slot .seed {
