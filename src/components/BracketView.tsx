@@ -40,15 +40,17 @@ export function BracketView({ tournament, interactive, canRevert, onPick, onReve
   const renderZone = (kind: 'wb' | 'lb', label: string, rounds: Match[][]) => (
     <div className={`zone ${kind}`}>
       <div className="region-label">{label}</div>
-      <div className="rounds">
-        {rounds.map((matches, i) => (
-          <div className="round tall" key={i}>
-            <div className="round-title">{matches[0]?.label ?? ''}</div>
-            {matches.map((m) => (
-              <MatchCard key={m.id} match={m} tournament={tournament} interactive={interactive} canRevert={canRevert} onPick={onPick} onRevert={onRevert} />
-            ))}
-          </div>
-        ))}
+      <div className="rounds-scroll">
+        <div className="rounds">
+          {rounds.map((matches, i) => (
+            <div className="round tall" key={i}>
+              <div className="round-title">{matches[0]?.label ?? ''}</div>
+              {matches.map((m) => (
+                <MatchCard key={m.id} match={m} tournament={tournament} interactive={interactive} canRevert={canRevert} onPick={onPick} onRevert={onRevert} />
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -59,19 +61,21 @@ export function BracketView({ tournament, interactive, canRevert, onPick, onReve
       {lb.length > 0 && renderZone('lb', '🟠 敗部 Losers Bracket', lb)}
       <div className="zone gf">
         <div className="region-label">🟣 冠軍戰 Grand Final</div>
-        <div className="rounds">
-          {gf && (
-            <div className="round">
-              <div className="round-title">{gf.label}</div>
-              <MatchCard match={gf} tournament={tournament} interactive={interactive} canRevert={canRevert} onPick={onPick} onRevert={onRevert} />
-            </div>
-          )}
-          {gfr && resetLive && (
-            <div className="round">
-              <div className="round-title">{gfr.label}</div>
-              <MatchCard match={gfr} tournament={tournament} interactive={interactive} canRevert={canRevert} onPick={onPick} onRevert={onRevert} />
-            </div>
-          )}
+        <div className="rounds-scroll">
+          <div className="rounds">
+            {gf && (
+              <div className="round">
+                <div className="round-title">{gf.label}</div>
+                <MatchCard match={gf} tournament={tournament} interactive={interactive} canRevert={canRevert} onPick={onPick} onRevert={onRevert} />
+              </div>
+            )}
+            {gfr && resetLive && (
+              <div className="round">
+                <div className="round-title">{gfr.label}</div>
+                <MatchCard match={gfr} tournament={tournament} interactive={interactive} canRevert={canRevert} onPick={onPick} onRevert={onRevert} />
+              </div>
+            )}
+          </div>
         </div>
         {tournament.resetEnabled && !resetLive && (
           <div className="gf-note">
