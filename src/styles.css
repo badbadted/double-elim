@@ -231,6 +231,12 @@ button { font-family: inherit; }
   background: var(--s1); border-radius: 4px; padding: 1px 0;
 }
 .slot .name { flex: 1; font-weight: 600; }
+.slot .name .realname {
+  display: block; font-size: 11px; font-weight: 600; color: var(--t2);
+  margin-top: 1px; text-decoration: none; letter-spacing: 0;
+}
+.slot.win .name .realname { color: #4d7c6a; }
+.slot.lost .name .realname { text-decoration: none; color: var(--lose); }
 .slot.empty { color: #cbd5e1; font-style: italic; }
 .slot.byeSlot { color: #cbd5e1; font-style: italic; }
 
@@ -285,6 +291,7 @@ button { font-family: inherit; }
 .champ-banner .cup { font-size: 34px; }
 .champ-banner .txt .k { font-size: 12px; font-weight: 700; color: #b45309; letter-spacing: .1em; }
 .champ-banner .txt .v { font-size: 30px; font-weight: 800; color: #92400e; }
+.champ-banner .txt .v .realname-inline { font-size: 16px; font-weight: 700; color: #b45309; }
 .champ-banner .champ-mascot {
   width: 72px; height: 72px; object-fit: cover; border-radius: 14px;
   margin-left: auto; box-shadow: var(--shadow); flex-shrink: 0;

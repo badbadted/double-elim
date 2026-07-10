@@ -17,8 +17,13 @@ interface Props {
   onRevert: (matchId: string) => void;
 }
 
-function slotText(r: ResolvedSlot): { text: string; seed: string; kind: 'player' | 'bye' | 'tbd' } {
-  if (r.state === 'player') return { text: displayName(r.player), seed: String(r.player.seed), kind: 'player' };
+function slotText(r: ResolvedSlot): { text: string; sub?: string; seed: string; kind: 'player' | 'bye' | 'tbd' } {
+  if (r.state === 'player') {
+    const p = r.player;
+    const nick = p.nickname?.trim();
+    const sub = nick && nick !== p.name ? p.name : undefined; // real name annotation
+    return { text: displayName(p), sub, seed: String(p.seed), kind: 'player' };
+  }
   if (r.state === 'bye') return { text: '輪空 bye', seed: '', kind: 'bye' };
   return { text: '待定', seed: '', kind: 'tbd' };
 }
@@ -62,7 +67,10 @@ export function MatchCard({ match, tournament, interactive, canRevert, onPick, o
         title={clickable && info.kind === 'player' ? `判定 ${info.text} 獲勝` : undefined}
       >
         {info.seed && <span className="seed">{info.seed}</span>}
-        <span className="name">{info.text}</span>
+        <span className="name">
+          {info.text}
+          {info.sub && <span className="realname">{info.sub}</span>}
+        </span>
       </div>
     );
   };
